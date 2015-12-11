@@ -1,0 +1,69 @@
+﻿<!doctype html>
+<html>
+<head>
+	<title> Generator Fibonacciego </title>
+	<style>
+	ol 
+	{
+		background-color:#ccc;
+		width:20%;
+	}
+	ol li 
+	{
+		background-color:#fff;
+		padding-left:5px;
+		margin:4px;
+	}
+	</style>
+</head>
+<body>
+	<div id="container">
+		<h1>Generator Fibonacciego</h1>
+		<h2>Z użyciem Web Workers</h2>
+		<input type="numeric" id="seriesLength" value="40" />
+		<input type="button" id="generateButton" value="Generuj!" />
+		<img src="load.gif" id="loadImg" />
+		<ol id="log"></ol>
+	</div>
+</body>
+<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script>
+	var log = null;
+	var loadImg;
+	var worker;
+	
+	$(function (){
+		log = $("#log");
+		loadImg = $("#loadImg");
+		loadImg.hide();
+		
+		$("#generateButton").on( "click", function() {
+			log.html("");
+			loadImg.show();
+			var seriesLength = parseInt($("#seriesLength").val());
+			
+			worker = new Worker("fib-worker.js");
+			worker.onmessage = messageHandler;
+			worker.onerror = errorHandler;
+			worker.postMessage(seriesLength);
+		});
+		
+		function messageHandler(e) {
+			var results = e.data;
+			$.each(results, function () {
+				logMsg(this);
+			});
+			loadImg.hide();
+		}
+		
+		function errorHandler(e) {
+			logMsg(e.message);
+		}
+		
+		function logMsg(msg) {
+			log.append("<li>" + msg + "</li>");
+		}
+	});
+</script>
+</html>
